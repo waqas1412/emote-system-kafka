@@ -56,11 +56,11 @@ The system enables viewers of live streams to react to meaningful moments with e
 ### Data flow (mermaid)
 ```mermaid
 flowchart LR
-  EG[Emote Generator]\n(Node.js) -->|raw-emote-data| K1[(Kafka)]
-  K1 -->|raw-emote-data| SB[Server B\nAnalyzer + REST]
+  EG[Emote Generator<br/>Node.js] -->|raw-emote-data| K1[(Kafka)]
+  K1 -->|raw-emote-data| SB[Server B<br/>Analyzer + REST]
   SB -->|aggregated-emote-data| K2[(Kafka)]
-  K2 -->|aggregated-emote-data| SA[Server A\nWebSocket]
-  SA -->|WS| FE[Frontend\nReact + Nginx]
+  K2 -->|aggregated-emote-data| SA[Server A<br/>WebSocket]
+  SA -->|WS| FE[Frontend<br/>React + Nginx]
   FE <-.->|HTTP /api| SB
 ```
 
