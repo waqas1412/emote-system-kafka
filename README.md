@@ -1,8 +1,8 @@
 <div align="center">
 
-# Emote System
+# 🎭 Emote System
 
-Reacting in Real‑Time: Emotes and Kafka in Action
+**Reacting in Real‑Time: Emotes and Kafka in Action**
 
 [![Status](https://img.shields.io/badge/status-active-success?style=flat-square)]()
 [![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white&style=flat-square)]()
@@ -12,7 +12,7 @@ Reacting in Real‑Time: Emotes and Kafka in Action
 [![License](https://img.shields.io/badge/License-Educational-blue?style=flat-square)]()
 
 <br/>
-<i>A distributed, event‑driven web app built for COMP.CS.510 (Spring 2025). It ingests viewer emotes, mines significant moments, and streams highlights to the UI in real‑time.</i>
+<i>A distributed, event‑driven web application built for COMP.CS.510 (Spring 2025). It simulates viewer emote reactions, processes them through a real-time analytics pipeline, and delivers significant moments to users via WebSocket connections.</i>
 
 </div>
 

@@ -1,11 +1,27 @@
+# ==================== EMOTE SYSTEM DOCKER COMPOSE ====================
+# 
+# This Docker Compose file defines the complete emote system architecture:
+# - Kafka: Message broker for inter-service communication
+# - Emote Generator: Simulates real-time emote data
+# - Server B: Data processing and analysis service
+# - Server A: WebSocket service for real-time client updates
+# - Frontend: React application with Nginx reverse proxy
+#
+# Architecture Flow:
+# Emote Generator → Kafka → Server B → Kafka → Server A → Frontend
+#
+
 version: '3'
 
 services:
+  # ==================== KAFKA MESSAGE BROKER ====================
+  # Central message broker for all inter-service communication
   kafka:
     image: bitnami/kafka:latest
     ports:
-      - "9092:9092"
+      - "9092:9092"  # Expose Kafka port for external access
     environment:
+      # Kafka KRaft configuration (no Zookeeper needed)
       - KAFKA_CFG_NODE_ID=0
       - KAFKA_CFG_PROCESS_ROLES=controller,broker
       - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
@@ -16,6 +32,7 @@ services:
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_KRAFT_CLUSTER_ID=MkU3OEVBNTcwNTJENDM2Qk
     healthcheck:
+      # Health check to ensure Kafka is ready before starting dependent services
       test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --list"]
       interval: 10s
       timeout: 5s
@@ -23,61 +40,71 @@ services:
     networks:
       - emote-network
 
+  # ==================== EMOTE GENERATOR SERVICE ====================
+  # Generates simulated emote data and publishes to Kafka
   emote-generator:
     build: ./emote-generator
     depends_on:
       kafka:
-        condition: service_healthy
+        condition: service_healthy  # Wait for Kafka to be ready
     environment:
       - KAFKA_BROKER=kafka:9092
-      - KAFKA_TOPIC=raw-emote-data
+      - KAFKA_TOPIC=raw-emote-data  # Output topic for raw emote data
     networks:
       - emote-network
 
+  # ==================== SERVER B - DATA PROCESSING SERVICE ====================
+  # Processes raw emote data and identifies significant moments
   server-b:
     build: ./server-b
     ports:
-      - "3001:3001"
+      - "3001:3001"  # Expose REST API port
     depends_on:
       kafka:
         condition: service_healthy
     environment:
       - KAFKA_BROKER=kafka:9092
-      - KAFKA_TOPIC_IN=raw-emote-data
-      - KAFKA_TOPIC_OUT=aggregated-emote-data
+      - KAFKA_TOPIC_IN=raw-emote-data      # Input topic from emote generator
+      - KAFKA_TOPIC_OUT=aggregated-emote-data  # Output topic for significant moments
       - PORT=3001
     networks:
       - emote-network
 
+  # ==================== SERVER A - WEBSOCKET SERVICE ====================
+  # Delivers significant moments to frontend via WebSocket
   server-a:
     build: ./server-a
     ports:
-      - "3002:3002"
+      - "3002:3002"  # Expose WebSocket port
     depends_on:
       kafka:
         condition: service_healthy
       server-b:
-        condition: service_started
+        condition: service_started  # Wait for Server B to start
     environment:
       - KAFKA_BROKER=kafka:9092
-      - KAFKA_TOPIC=aggregated-emote-data
+      - KAFKA_TOPIC=aggregated-emote-data  # Input topic from Server B
       - PORT=3002
     networks:
       - emote-network
 
+  # ==================== FRONTEND APPLICATION ====================
+  # React application with Nginx reverse proxy
   frontend:
     build: ./frontend
     ports:
-      - "8080:80"
+      - "8080:80"  # Expose web application port
     depends_on:
-      - server-a
-      - server-b
+      - server-a  # WebSocket connection
+      - server-b  # REST API connection
     environment:
-      - WEBSOCKET_URL=ws://localhost:3002
-      - API_URL=http://localhost:3001
+      - WEBSOCKET_URL=ws://localhost:3002  # WebSocket endpoint for Server A
+      - API_URL=http://localhost:3001      # REST API endpoint for Server B
     networks:
       - emote-network
 
+# ==================== NETWORK CONFIGURATION ====================
+# Custom network for inter-service communication
 networks:
   emote-network:
     driver: bridge

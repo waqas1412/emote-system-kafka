@@ -1,15 +1,15 @@
 {
   "name": "server-a",
   "version": "1.0.0",
-  "description": "Server A for delivering significant moments to the frontend via WebSocket",
+  "description": "Server A - WebSocket service for delivering significant moments to the frontend via real-time WebSocket connections",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "kafkajs": "^2.2.4",
-    "ws": "^8.13.0",
-    "express": "^4.18.2",
-    "cors": "^2.8.5"
+    "kafkajs": "^2.2.4",    // Kafka client for consuming significant moments
+    "ws": "^8.13.0",        // WebSocket server implementation
+    "express": "^4.18.2",   // HTTP server framework (minimal setup)
+    "cors": "^2.8.5"        // Cross-Origin Resource Sharing middleware
   }
 }

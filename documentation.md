@@ -1,33 +1,51 @@
-# Emote System Documentation
+# 📚 Emote System Documentation
 
-## Architecture Overview
+## 🏗️ Architecture Overview
 
-This document describes the architecture and implementation of the Emote System, a distributed application that enables viewers of live streams to participate by reacting to meaningful moments and allows broadcasters to analyze viewer reactions.
+This comprehensive documentation describes the architecture and implementation of the **Emote System**, a distributed, event-driven application that simulates real-time viewer reactions to live content. The system demonstrates modern web development practices including microservices architecture, real-time communication, and event-driven data processing.
 
-### Components
+### 🔧 System Components
 
-The system consists of the following components:
+The emote system is built as a collection of microservices, each with specific responsibilities:
 
-1. **Emote Generator**: Produces random emote data with timestamps
-2. **Server B**: Analyzes raw emote data to identify significant moments
-3. **Server A**: Delivers significant moments to the frontend via WebSocket
-4. **Frontend**: Displays significant moments and provides settings management
-5. **Kafka**: Message broker for communication between components
+| Component | Purpose | Technology | Port |
+|-----------|---------|------------|------|
+| **🎲 Emote Generator** | Simulates realistic emote data generation with burst patterns | Node.js + KafkaJS | Internal |
+| **🧠 Server B** | Processes raw data, identifies significant moments, provides REST API | Node.js + Express + KafkaJS | 3001 |
+| **📡 Server A** | WebSocket gateway for real-time client communication | Node.js + WebSocket + KafkaJS | 3002 |
+| **🎨 Frontend** | React dashboard with real-time updates and configuration panel | React + Nginx | 8080 |
+| **📨 Kafka** | Message broker for reliable inter-service communication | Apache Kafka (KRaft) | 9092 |
 
-### Technologies Used
+### 🛠️ Technology Stack
 
-- **Backend**: Node.js with Express
-- **Frontend**: React
-- **Message Broker**: Kafka
-- **Containerization**: Docker and Docker Compose
-- **Web Server**: Nginx (for frontend)
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| **Backend Services** | Node.js + Express | Lightweight, event-driven server framework |
+| **Frontend** | React 18 | Modern UI with hooks and real-time state management |
+| **Message Broker** | Apache Kafka (KRaft) | Reliable, distributed event streaming |
+| **Containerization** | Docker + Docker Compose | Consistent deployment and orchestration |
+| **Reverse Proxy** | Nginx | Static file serving and API routing |
+| **Real-time Communication** | WebSocket | Low-latency bidirectional communication |
 
-### Communication Flow
+### 🔄 Data Flow Architecture
 
-1. Emote Generator produces random emote data and sends it to the `raw-emote-data` Kafka topic
-2. Server B consumes the raw emote data, analyzes it to identify significant moments, and sends them to the `aggregated-emote-data` Kafka topic
-3. Server A consumes the aggregated emote data and sends it to the frontend via WebSocket
-4. Frontend displays the significant moments and allows users to manage settings via REST API calls to Server B
+```mermaid
+flowchart LR
+    EG[🎲 Emote Generator] -->|raw-emote-data| K1[(📨 Kafka)]
+    K1 -->|raw-emote-data| SB[🧠 Server B<br/>Analytics Engine]
+    SB -->|aggregated-emote-data| K2[(📨 Kafka)]
+    K2 -->|aggregated-emote-data| SA[📡 Server A<br/>WebSocket Gateway]
+    SA -->|WebSocket| FE[🎨 Frontend<br/>React Dashboard]
+    FE <-.->|REST API| SB
+```
+
+**Step-by-step data flow:**
+
+1. **🎲 Data Generation**: Emote Generator creates realistic emote patterns (80% single, 20% bursts)
+2. **📨 Message Streaming**: Raw emote data flows through Kafka to ensure reliable delivery
+3. **🧠 Real-time Analysis**: Server B processes batches of emotes, identifies significant moments based on configurable thresholds
+4. **📡 Live Broadcasting**: Server A consumes processed data and broadcasts to connected clients via WebSocket
+5. **🎨 Interactive Dashboard**: Frontend displays significant moments with animations and provides configuration controls
 
 ## How to Run the System
 

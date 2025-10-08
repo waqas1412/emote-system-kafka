@@ -1,12 +1,12 @@
 {
   "name": "emote-generator",
   "version": "1.0.0",
-  "description": "Generates random emote data for the emote system",
+  "description": "Emote Generator - Service for generating simulated random emote data with realistic patterns (single emotes and bursts) for the emote analysis system",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "kafkajs": "^2.2.4"
+    "kafkajs": "^2.2.4"  // Kafka client for publishing generated emote data
   }
 }

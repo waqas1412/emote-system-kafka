@@ -1,66 +1,98 @@
+/**
+ * Emote System Frontend Application
+ * 
+ * This React application provides a real-time dashboard for monitoring
+ * and configuring the emote analysis system. It connects to both the
+ * WebSocket service (Server A) for real-time updates and the REST API
+ * (Server B) for configuration management.
+ * 
+ * Key features:
+ * - Real-time display of significant emote moments
+ * - Configuration panel for analysis parameters
+ * - Animated emote effects for significant moments
+ * - WebSocket connection management with auto-reconnect
+ */
+
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
 function App() {
-  // State for WebSocket connection
+  // ==================== STATE MANAGEMENT ====================
+  
+  // WebSocket connection state
   const [connected, setConnected] = useState(false);
+  
+  // Significant moments received from the backend
   const [significantMoments, setSignificantMoments] = useState([]);
   
-  // State for settings
-  const [interval, setInterval] = useState(30);
-  const [threshold, setThreshold] = useState(0.3);
+  // Configuration settings (synced with backend)
+  const [interval, setInterval] = useState(30);           // Analysis interval
+  const [threshold, setThreshold] = useState(0.3);        // Significance threshold
   const [allowedEmotes, setAllowedEmotes] = useState(['😀', '😡', '😢', '😮', '❤️', '👍', '👎', '🔥']);
   
-  // State for animations
+  // Animation state for floating emote effects
   const [animatingEmotes, setAnimatingEmotes] = useState([]);
   
-  // WebSocket reference
+  // WebSocket connection reference for lifecycle management
   const wsRef = useRef(null);
   
-  // API URL from environment variable
+  // ==================== CONFIGURATION ====================
+  
+  // API endpoints from environment variables (with fallbacks for development)
   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001';
   const wsUrl = process.env.REACT_APP_WEBSOCKET_URL || 'ws://localhost:3002';
   
-  // Connect to WebSocket
+  // ==================== WEBSOCKET CONNECTION ====================
+  
+  /**
+   * WebSocket connection management with auto-reconnect
+   * Establishes real-time communication with Server A for receiving significant moments
+   */
   useEffect(() => {
     const connectWebSocket = () => {
       wsRef.current = new WebSocket(wsUrl);
       
+      // Handle successful connection
       wsRef.current.onopen = () => {
         console.log('WebSocket connected');
         setConnected(true);
       };
       
+      // Handle connection close with automatic reconnection
       wsRef.current.onclose = () => {
         console.log('WebSocket disconnected');
         setConnected(false);
         
-        // Try to reconnect after 3 seconds
+        // Attempt to reconnect after 3 seconds
+        // This ensures the app maintains real-time functionality even after network issues
         setTimeout(connectWebSocket, 3000);
       };
       
+      // Handle WebSocket errors
       wsRef.current.onerror = (error) => {
         console.error('WebSocket error:', error);
       };
       
+      // Process incoming messages from the backend
       wsRef.current.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data);
           
+          // Handle significant moments data
           if (message.type === 'significant-moments' && Array.isArray(message.data)) {
-            // Add new moments to the state
+            // Update the significant moments state with new data
             setSignificantMoments(prevMoments => {
-              // Combine new moments with existing ones, avoiding duplicates
+              // Merge new moments with existing ones (newest first)
               const newMoments = [...message.data, ...prevMoments];
               
-              // Sort by timestamp (newest first)
+              // Sort by timestamp to maintain chronological order
               newMoments.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
               
-              // Limit to 20 moments to avoid performance issues
+              // Limit to 20 moments to prevent performance degradation
               return newMoments.slice(0, 20);
             });
             
-            // Trigger animation for each significant moment
+            // Trigger visual animations for each significant moment
             message.data.forEach(moment => {
               triggerEmoteAnimation(moment.emote);
             });
@@ -71,9 +103,10 @@ function App() {
       };
     };
     
+    // Establish initial connection
     connectWebSocket();
     
-    // Cleanup on unmount
+    // Cleanup function to close WebSocket on component unmount
     return () => {
       if (wsRef.current) {
         wsRef.current.close();
@@ -81,20 +114,25 @@ function App() {
     };
   }, [wsUrl]);
   
-  // Fetch settings on component mount
+  // ==================== SETTINGS INITIALIZATION ====================
+  
+  /**
+   * Fetch initial configuration settings from Server B
+   * This ensures the UI displays the current backend configuration
+   */
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        // Fetch interval setting
-        const intervalResponse = await axios.get(`${apiUrl}/settings/interval`);
+        // Fetch all configuration settings in parallel for better performance
+        const [intervalResponse, thresholdResponse, emotesResponse] = await Promise.all([
+          axios.get(`${apiUrl}/settings/interval`),
+          axios.get(`${apiUrl}/settings/threshold`),
+          axios.get(`${apiUrl}/settings/allowed-emotes`)
+        ]);
+        
+        // Update local state with fetched settings
         setInterval(intervalResponse.data.interval);
-        
-        // Fetch threshold setting
-        const thresholdResponse = await axios.get(`${apiUrl}/settings/threshold`);
         setThreshold(thresholdResponse.data.threshold);
-        
-        // Fetch allowed emotes setting
-        const emotesResponse = await axios.get(`${apiUrl}/settings/allowed-emotes`);
         setAllowedEmotes(emotesResponse.data.allowedEmotes);
       } catch (error) {
         console.error('Error fetching settings:', error);
@@ -104,7 +142,12 @@ function App() {
     fetchSettings();
   }, [apiUrl]);
   
-  // Function to update interval setting
+  // ==================== SETTINGS UPDATE FUNCTIONS ====================
+  
+  /**
+   * Updates the analysis interval setting on the backend
+   * This controls how many messages are collected before analysis
+   */
   const updateInterval = async () => {
     try {
       await axios.put(`${apiUrl}/settings/interval`, { interval });
@@ -115,7 +158,10 @@ function App() {
     }
   };
   
-  // Function to update threshold setting
+  /**
+   * Updates the significance threshold setting on the backend
+   * This controls the minimum ratio for an emote to be considered significant
+   */
   const updateThreshold = async () => {
     try {
       await axios.put(`${apiUrl}/settings/threshold`, { threshold });
@@ -126,7 +172,10 @@ function App() {
     }
   };
   
-  // Function to update allowed emotes setting
+  /**
+   * Updates the allowed emotes list on the backend
+   * This controls which emotes are tracked and analyzed
+   */
   const updateAllowedEmotes = async () => {
     try {
       await axios.put(`${apiUrl}/settings/allowed-emotes`, { allowedEmotes });
@@ -137,56 +186,80 @@ function App() {
     }
   };
   
-  // Function to toggle an emote in the allowed emotes list
+  /**
+   * Toggles an emote in the allowed emotes list
+   * This allows users to enable/disable specific emotes for analysis
+   * 
+   * @param {string} emote - The emote character to toggle
+   */
   const toggleEmote = (emote) => {
     setAllowedEmotes(prevEmotes => {
       if (prevEmotes.includes(emote)) {
+        // Remove emote from the list
         return prevEmotes.filter(e => e !== emote);
       } else {
+        // Add emote to the list
         return [...prevEmotes, emote];
       }
     });
   };
   
-  // Function to trigger emote animation
+  /**
+   * Triggers animated emote effects for significant moments
+   * Creates floating emotes that animate across the screen
+   * 
+   * @param {string} emote - The emote character to animate
+   */
   const triggerEmoteAnimation = (emote) => {
-    // Create multiple emotes for the animation
+    // Create multiple animated emote instances for visual impact
     const newEmotes = [];
-    const count = Math.floor(Math.random() * 8) + 5; // 5-12 emotes
+    const count = Math.floor(Math.random() * 8) + 5; // Random count between 5-12 emotes
     
     for (let i = 0; i < count; i++) {
       newEmotes.push({
-        id: Date.now() + i,
-        emote,
-        left: Math.random() * 100, // Random horizontal position (0-100%)
-        delay: Math.random() * 2 // Random delay (0-2s)
+        id: Date.now() + i,                    // Unique ID for React key
+        emote,                                 // The emote character to display
+        left: Math.random() * 100,             // Random horizontal position (0-100%)
+        delay: Math.random() * 2               // Random animation delay (0-2s)
       });
     }
     
+    // Add new animated emotes to the state
     setAnimatingEmotes(prev => [...prev, ...newEmotes]);
     
-    // Remove emotes after animation completes
+    // Clean up animated emotes after animation completes
+    // This prevents memory leaks from accumulating animation objects
     setTimeout(() => {
       setAnimatingEmotes(prev => prev.filter(e => !newEmotes.includes(e)));
-    }, 6000); // Animation duration + max delay
+    }, 6000); // Animation duration (4s) + maximum delay (2s)
   };
   
-  // Format timestamp for display
+  /**
+   * Formats a timestamp for display in the UI
+   * 
+   * @param {string} timestamp - ISO timestamp string
+   * @returns {string} Formatted time string
+   */
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString();
   };
   
+  // ==================== RENDER COMPONENT ====================
+  
   return (
     <div className="container">
+      {/* Application header with connection status */}
       <div className="header">
         <h1>Emote System</h1>
         <p>WebSocket Status: {connected ? 'Connected' : 'Disconnected'}</p>
       </div>
       
+      {/* Configuration panel for system settings */}
       <div className="card">
         <h2>Settings</h2>
         <div className="settings-panel">
+          {/* Analysis interval setting */}
           <div className="setting-item">
             <label>Analysis Interval (messages):</label>
             <div className="setting-row">
@@ -200,6 +273,7 @@ function App() {
             </div>
           </div>
           
+          {/* Significance threshold setting */}
           <div className="setting-item">
             <label>Significance Threshold (0-1):</label>
             <div className="setting-row">
@@ -215,6 +289,7 @@ function App() {
             </div>
           </div>
           
+          {/* Allowed emotes configuration */}
           <div className="setting-item">
             <label>Allowed Emotes:</label>
             <div className="setting-row">
@@ -236,6 +311,7 @@ function App() {
         </div>
       </div>
       
+      {/* Significant moments display */}
       <div className="card">
         <h2>Significant Moments</h2>
         {significantMoments.length === 0 ? (
@@ -260,16 +336,17 @@ function App() {
         )}
       </div>
       
-      {/* Emote animation container */}
+      {/* Floating emote animation overlay */}
+      {/* This container covers the entire screen for emote animations */}
       <div className="emote-animation-container">
         {animatingEmotes.map(({ id, emote, left, delay }) => (
           <div
             key={id}
             className="floating-emote"
             style={{
-              left: `${left}%`,
-              bottom: '-50px',
-              animationDelay: `${delay}s`
+              left: `${left}%`,        // Random horizontal position
+              bottom: '-50px',        // Start below viewport
+              animationDelay: `${delay}s` // Random animation delay
             }}
           >
             {emote}

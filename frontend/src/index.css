@@ -1,30 +1,42 @@
+/* ==================== GLOBAL STYLES ==================== */
+
+/* Base body styling with dark theme */
 body {
   margin: 0;
+  /* Modern system font stack for optimal cross-platform rendering */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
+  /* Font smoothing for better text rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Dark theme colors */
   background-color: #121212;
   color: #f5f5f5;
 }
 
+/* Code/monospace font styling */
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
 
+/* ==================== LAYOUT COMPONENTS ==================== */
+
+/* Main container with responsive max-width */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
 }
 
+/* Application header styling */
 .header {
   text-align: center;
   margin-bottom: 30px;
 }
 
+/* Card component for sections (settings, moments display) */
 .card {
   background-color: #1e1e1e;
   border-radius: 8px;
@@ -33,24 +45,30 @@ code {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Settings panel layout */
 .settings-panel {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
+/* Individual setting item layout */
 .setting-item {
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
 
+/* Setting row with input and button */
 .setting-row {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
+/* ==================== FORM ELEMENTS ==================== */
+
+/* Primary button styling */
 button {
   background-color: #4caf50;
   color: white;
@@ -61,10 +79,12 @@ button {
   font-size: 14px;
 }
 
+/* Button hover state */
 button:hover {
   background-color: #45a049;
 }
 
+/* Input and select field styling with dark theme */
 input, select {
   padding: 8px;
   border-radius: 4px;
@@ -73,12 +93,16 @@ input, select {
   color: #f5f5f5;
 }
 
+/* ==================== SIGNIFICANT MOMENTS DISPLAY ==================== */
+
+/* Container for displaying significant moments */
 .moments-container {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
+/* Individual moment item styling */
 .moment-item {
   background-color: #2a2a2a;
   border-radius: 6px;
@@ -88,28 +112,35 @@ input, select {
   align-items: center;
 }
 
+/* Large emote display for significant moments */
 .emote-display {
   font-size: 24px;
   margin-right: 10px;
 }
 
+/* ==================== EMOTE ANIMATIONS ==================== */
+
+/* Full-screen overlay container for floating emote animations */
 .emote-animation-container {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none;
-  z-index: 1000;
-  overflow: hidden;
+  pointer-events: none; /* Allow clicks to pass through */
+  z-index: 1000;        /* Ensure animations appear above all content */
+  overflow: hidden;     /* Hide emotes that go outside viewport */
 }
 
+/* Individual floating emote styling */
 .floating-emote {
   position: absolute;
   font-size: 36px;
   animation: float-up 4s ease-out forwards;
 }
 
+/* Floating animation keyframes */
+/* Emotes start below viewport, float up, scale up, and fade out */
 @keyframes float-up {
   0% {
     transform: translateY(100vh) scale(0.5);

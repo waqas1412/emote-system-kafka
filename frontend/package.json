@@ -2,33 +2,34 @@
   "name": "emote-system-frontend",
   "version": "1.0.0",
   "private": true,
+  "description": "React frontend application for the Emote System - provides real-time dashboard for monitoring significant moments and configuring analysis parameters",
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "axios": "^1.6.0"
+    "react": "^18.2.0",        // React library for UI components
+    "react-dom": "^18.2.0",    // React DOM for rendering
+    "react-scripts": "5.0.1",  // Create React App build tools
+    "axios": "^1.6.0"          // HTTP client for REST API calls
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "react-scripts start",     // Development server
+    "build": "react-scripts build",     // Production build
+    "test": "react-scripts test",       // Run tests
+    "eject": "react-scripts eject"      // Eject from Create React App
   },
   "eslintConfig": {
     "extends": [
-      "react-app"
+      "react-app"  // ESLint configuration for React applications
     ]
   },
   "browserslist": {
     "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
+      ">0.2%",        // Browsers with >0.2% market share
+      "not dead",     // Exclude browsers without official support
+      "not op_mini all" // Exclude Opera Mini
     ],
     "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
+      "last 1 chrome version",  // Latest Chrome for development
+      "last 1 firefox version", // Latest Firefox for development
+      "last 1 safari version"   // Latest Safari for development
     ]
   }
 }
