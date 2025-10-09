@@ -5,12 +5,11 @@
 echo "Testing Emote System Components..."
 
 # Create a test directory
-mkdir -p /home/ubuntu/emote-system/test
+mkdir -p ./test
 
 # Test 1: Verify Docker Compose file exists
 echo "Test 1: Verifying Docker Compose file..."
-cd /home/ubuntu/emote-system
-if [ -f "docker-compose.yml" ]; then
+if [ -f "./docker-compose.yml" ]; then
   echo "✅ Docker Compose file exists"
 else
   echo "❌ Docker Compose file is missing"
@@ -20,23 +19,23 @@ fi
 # Test 2: Check if all required files exist
 echo "Test 2: Checking if all required files exist..."
 required_files=(
-  "/home/ubuntu/emote-system/docker-compose.yml"
-  "/home/ubuntu/emote-system/emote-generator/Dockerfile"
-  "/home/ubuntu/emote-system/emote-generator/index.js"
-  "/home/ubuntu/emote-system/emote-generator/package.json"
-  "/home/ubuntu/emote-system/server-a/Dockerfile"
-  "/home/ubuntu/emote-system/server-a/index.js"
-  "/home/ubuntu/emote-system/server-a/package.json"
-  "/home/ubuntu/emote-system/server-b/Dockerfile"
-  "/home/ubuntu/emote-system/server-b/index.js"
-  "/home/ubuntu/emote-system/server-b/package.json"
-  "/home/ubuntu/emote-system/frontend/Dockerfile"
-  "/home/ubuntu/emote-system/frontend/nginx.conf"
-  "/home/ubuntu/emote-system/frontend/package.json"
-  "/home/ubuntu/emote-system/frontend/src/App.js"
-  "/home/ubuntu/emote-system/frontend/src/index.js"
-  "/home/ubuntu/emote-system/frontend/public/index.html"
-  "/home/ubuntu/emote-system/documentation.md"
+  "./docker-compose.yml"
+  "./emote-generator/Dockerfile"
+  "./emote-generator/index.js"
+  "./emote-generator/package.json"
+  "./server-a/Dockerfile"
+  "./server-a/index.js"
+  "./server-a/package.json"
+  "./server-b/Dockerfile"
+  "./server-b/index.js"
+  "./server-b/package.json"
+  "./frontend/Dockerfile"
+  "./frontend/nginx.conf"
+  "./frontend/package.json"
+  "./frontend/src/App.js"
+  "./frontend/src/index.js"
+  "./frontend/public/index.html"
+  "./documentation.md"
 )
 
 all_files_exist=true
@@ -57,9 +56,9 @@ fi
 # Test 3: Validate Node.js files syntax
 echo "Test 3: Validating Node.js files syntax..."
 node_files=(
-  "/home/ubuntu/emote-system/emote-generator/index.js"
-  "/home/ubuntu/emote-system/server-a/index.js"
-  "/home/ubuntu/emote-system/server-b/index.js"
+  "./emote-generator/index.js"
+  "./server-a/index.js"
+  "./server-b/index.js"
 )
 
 all_syntax_valid=true
@@ -80,7 +79,7 @@ fi
 
 # Test 4: Validate React files syntax
 echo "Test 4: Validating React files syntax..."
-node --check "/home/ubuntu/emote-system/frontend/src/App.js" > /dev/null 2>&1
+node --check "./frontend/src/App.js" > /dev/null 2>&1
 if [ $? -eq 0 ]; then
   echo "✅ React App.js syntax is valid"
 else
