@@ -1,29 +1,27 @@
 <div align="center">
 
-# 🎭 Emote System
+<h1 align="center">🎭 Emote System 🎭</h1>
 
-**Reacting in Real‑Time: Emotes and Kafka in Action**
+<p align="center">
+  <strong>Reacting in Real‑Time: Emotes and Kafka in Action</strong>
+  <br />
+  <br />
+  <i>A distributed, event‑driven web application that simulates and processes emote reactions in real‑time, built with Node.js, React, Kafka, and Docker.</i>
+</p>
 
-[![Status](https://img.shields.io/badge/status-active-success?style=flat-square)]()
-[![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white&style=flat-square)]()
-[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=nodedotjs&logoColor=white&style=flat-square)]()
-[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=0A0A0A&style=flat-square)]()
-[![Kafka](https://img.shields.io/badge/Kafka-KRaft-231F20?logo=apachekafka&logoColor=white&style=flat-square)]()
-[![License](https://img.shields.io/badge/License-Educational-blue?style=flat-square)]()
+<p align="center">
+    <img alt="Status" src="https://img.shields.io/badge/status-active-brightgreen?style=for-the-badge">
+    <img alt="License" src="https://img.shields.io/badge/license-Educational-blue?style=for-the-badge">
+</p>
 
-<br/>
-<i>A distributed, event‑driven web application built for COMP.CS.510 (Spring 2025). It simulates viewer emote reactions, processes them through a real-time analytics pipeline, and delivers significant moments to users via WebSocket connections.</i>
+<p align="center">
+    <img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white&style=for-the-badge">
+    <img alt="Node.js" src="https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&logoColor=white&style=for-the-badge">
+    <img alt="React" src="https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB&style=for-the-badge">
+    <img alt="Kafka" src="https://img.shields.io/badge/Apache_Kafka-231F20?logo=apachekafka&logoColor=white&style=for-the-badge">
+</p>
 
 </div>
-
----
-
-### Quick links
-- ↪ Architecture: high‑level diagram and flow
-- ⚙️ Getting Started: one‑command Docker launch
-- 🔌 API & Contracts: REST, WebSocket, Kafka
-- 🧠 Features: real‑time, configurable analysis, animations
-- 🛣️ Roadmap & Contributions
 
 ---
 
@@ -41,26 +39,47 @@
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
 
-## Overview
+## 📖 Overview
+
 The system enables viewers of live streams to react to meaningful moments with emotes. Raw reactions are processed into “significant moments” and pushed to the frontend over WebSocket for a live experience.
 
-## Architecture
+## 🏗️ Architecture
 
-### Components
-- **Emote Generator**: A Node.js service using `KafkaJS` that simulates user activity by producing a continuous stream of emote events. It generates both single emotes and bursts of emotes to create realistic data patterns for testing the system's processing capabilities.
-- **Server B (Analyzer + Settings API)**: A Node.js service that serves as the core data processing engine. It uses `KafkaJS` to consume raw emote events from the `raw-emote-data` topic. The service aggregates these events into time windows, analyzes them to identify "significant moments" based on configurable thresholds, and then publishes these moments to the `aggregated-emote-data` topic. It also exposes a REST API using `Express` for dynamically configuring the analysis parameters (e.g., interval, threshold, and allowed emotes).
-- **Server A (WebSocket Gateway)**: A Node.js service responsible for real-time communication with the frontend. It uses `KafkaJS` to consume the `aggregated-emote-data` topic and broadcasts these significant moments to all connected clients via a WebSocket server implemented with the `ws` library.
-- **Frontend**: A `React` single-page application that provides a user interface for visualizing significant moments and adjusting the analysis settings. It's served by `Nginx`, which also acts as a reverse proxy, directing API requests (`/api`) to Server B and WebSocket connections (`/ws`) to Server A.
-- **Kafka**: The central message broker of the system, running in KRaft mode (without Zookeeper). It decouples the services, enabling them to communicate asynchronously and ensuring data durability and scalability.
+The system is composed of five core components that work together to process and visualize emote data in real-time.
 
-### Data flow (mermaid)
+| Component                 | Technology                   | Description                                                                                                                              |
+| :------------------------ | :--------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
+| 🎭 **Emote Generator**    | `Node.js`, `KafkaJS`         | Simulates user activity by producing a continuous stream of emote events to a Kafka topic.                                               |
+| 🧠 **Server B**           | `Node.js`, `Express`, `KafkaJS` | Consumes raw emote events, analyzes them to find "significant moments," and exposes a REST API for dynamic configuration.                  |
+| 🔌 **Server A**           | `Node.js`, `ws`, `KafkaJS`   | Consumes significant moments from Kafka and broadcasts them to all connected frontend clients via WebSockets.                          |
+| 🖥️ **Frontend**            | `React`, `Nginx`             | Visualizes significant moments and provides a UI to configure the analysis settings. Served by Nginx, which also acts as a reverse proxy. |
+| 🔗 **Kafka**              | `KRaft mode`                 | The central message broker, decoupling services and enabling asynchronous, durable communication.                                        |
+
+### Data Flow
+
+The diagram below illustrates how data moves through the system, from generation to visualization.
+
 ```mermaid
 flowchart LR
-    EG[Emote Generator<br/>Node.js] -->|raw-emote-data| K[(Kafka)]
-    K -->|raw-emote-data| SB[Server B<br/>Analyzer + REST]
+    subgraph "✨ Emote Generation"
+        EG[("fa:fa-rocket<br/>Emote Generator")]
+    end
+
+    subgraph "🔄 Real-Time Pipeline"
+        K[(fa:fa-server<br/>Kafka)]
+        SB("fa:fa-cogs<br/>Server B<br/>Analyzer + API")
+        SA("fa:fa-plug<br/>Server A<br/>WebSocket Gateway")
+    end
+
+    subgraph "👁️ User Interface"
+        FE[("fa:fa-desktop<br/>Frontend")]
+    end
+
+    EG -->|raw-emote-data| K
+    K -->|raw-emote-data| SB
     SB -->|aggregated-emote-data| K
-    K -->|aggregated-emote-data| SA[Server A<br/>WebSocket]
-    SA -->|WebSocket| FE[Frontend<br/>React + Nginx]
+    K -->|aggregated-emote-data| SA
+    SA --o|WebSocket| FE
     FE -->|HTTP API| SB
 ```
 
@@ -68,69 +87,76 @@ flowchart LR
 - `raw-emote-data`: Carries raw emote events from the Emote Generator to Server B. Each message represents a single emote reaction.
 - `aggregated-emote-data`: Transports processed, significant moments from Server B to Server A. Each message contains a batch of moments that have met the defined analysis criteria.
 
-## Features
+## ✨ Features
 
--   **Real-time Updates**: The system delivers significant moments to the frontend in real time using a WebSocket connection. **Server A** listens for messages on the `aggregated-emote-data` Kafka topic and immediately broadcasts them to all connected clients. The React frontend uses a `useEffect` hook to manage the WebSocket lifecycle, ensuring a persistent connection and updating the UI state as new moments arrive.
+-   **⚡ Real-Time Updates**: Significant moments are delivered to the frontend in real-time using WebSockets. Server A pushes moments as soon as they are processed, and the React frontend updates dynamically.
 
--   **Configurable Analysis**: The core analysis logic in **Server B** is highly configurable via a REST API. The frontend can dynamically adjust the `interval` (the number of messages to process in a batch), the `threshold` (the ratio required for a moment to be considered significant), and the list of `allowedEmotes`. These settings are held in memory on Server B and directly influence the behavior of the `analyzeEmotes` function.
+-   **🔧 Configurable Analysis**: The analysis logic is highly configurable via a REST API. Dynamically adjust the processing interval, significance threshold, and tracked emotes to tune the system's behavior on the fly.
 
--   **Interactive UI with Animations**: The React frontend provides a user-friendly interface for both viewing significant moments and configuring the system. When a new significant moment is received, the application triggers a floating emote animation using CSS. This provides immediate visual feedback and enhances the user experience.
+-   **🎨 Interactive UI with Animations**: The React frontend provides a user-friendly interface for viewing moments and configuring settings. New moments trigger floating emote animations, enhancing the user experience.
 
--   **Fully Containerized**: The entire application stack is defined in `docker-compose.yml`, allowing for a consistent, one-command startup of all services, including the Kafka message broker. This simplifies the development setup and ensures that the application runs the same way in any environment.
+-   **🐳 Fully Containerized**: The entire application is orchestrated with Docker Compose, enabling a consistent, one-command startup for all services, including the Kafka message broker.
 
-## Screenshots
-Add your media to `frontend/public/` and reference here.
-- Demo GIF (WebSocket updates + animations)
-- Settings panel (interval, threshold, allowed emotes)
+## 📸 Screenshots
 
-## Getting started
+*Add your media to `frontend/public/` and reference it here.*
 
-This project is designed to be run with Docker Compose, but individual services can also be run locally for development.
+-   Demo GIF (WebSocket updates + animations)
+-   Settings panel (interval, threshold, allowed emotes)
+
+## 🚀 Getting Started
+
+This project is designed to be run with Docker Compose for a quick and easy setup.
 
 ### Prerequisites
-- Docker & Docker Compose
-- Node.js (v18+) and npm (if running services locally)
+
+-   [Docker](https://www.docker.com/get-started) & [Docker Compose](https://docs.docker.com/compose/install/)
+-   [Node.js](https://nodejs.org/en/) (v18+) and npm (for local development)
 
 ### Docker Compose (Recommended)
 
-This is the simplest way to start the entire system.
+This is the simplest way to launch the entire application stack.
 
-1.  **Start all services:**
+1.  **Launch all services:**
     ```bash
     docker-compose up -d
     ```
-2.  **Open the application:**
-    Navigate to `http://localhost:8080` in your browser.
 
-3.  **View logs:**
-    To view the logs for all services, run:
+2.  **Access the application:**
+    Open your browser and navigate to `http://localhost:8080`.
+
+3.  **Monitor logs:**
+    To view the logs for all services in real-time, run:
     ```bash
     docker-compose logs -f
     ```
-    Or for a specific service (e.g., `server-b`):
+    Or, for a specific service (e.g., `server-b`):
     ```bash
     docker-compose logs -f server-b
     ```
 
-4.  **Stop all services:**
+4.  **Shut down the system:**
     ```bash
     docker-compose down
     ```
 
-### Local Development (Manual)
+<details>
+<summary>💻 Local Development (Manual Setup)</summary>
 
-If you want to run services individually without Docker:
+If you prefer to run the services manually without Docker:
 
 1.  **Start Kafka:**
-    You still need Kafka running. You can start just Kafka using Docker Compose:
+    You still need Kafka. The easiest way is to start it via Docker Compose:
     ```bash
     docker-compose up -d kafka
     ```
-2.  **Run a service:**
-    For each service (`emote-generator`, `server-a`, `server-b`, `frontend`):
-    - Navigate to the service directory (e.g., `cd server-b`).
-    - Install dependencies: `npm install`.
-    - Set environment variables (see [Configuration](#configuration)) and start the service: `npm start`.
+
+2.  **Run Each Service:**
+    For each service (`emote-generator`, `server-a`, `server-b`):
+    -   Navigate to the service directory (e.g., `cd server-b`).
+    -   Install dependencies: `npm install`.
+    -   Set the required environment variables (see [Configuration](#-configuration)).
+    -   Start the service: `npm start`.
 
     **Example for Server B:**
     ```bash
@@ -142,39 +168,38 @@ If you want to run services individually without Docker:
     export PORT=3001
     npm start
     ```
-3.  **Run the frontend:**
-    The frontend requires a slightly different setup.
+
+3.  **Run the Frontend:**
+    The React development server can be started for a better development experience:
     ```bash
     cd frontend
     npm install
     npm start
     ```
-    The React development server will open the app at `http://localhost:3000`. The API and WebSocket URLs in `src/App.js` are pre-configured to point to `localhost:3001` and `localhost:3002`.
+    The app will be available at `http://localhost:3000`. The API and WebSocket URLs in `src/App.js` are pre-configured for this setup.
 
-## Configuration
+</details>
+
+<details id="configuration">
+<summary>⚙️ Configuration</summary>
 
 The system is configured using environment variables, which are defined in `docker-compose.yml` for containerized deployment and can be set in the shell for local development.
 
 ### Environment Variables
 
-**Emote Generator:**
--   `KAFKA_BROKER`: The address of the Kafka broker. Default: `kafka:9092`.
--   `KAFKA_TOPIC`: The topic to which raw emote data is published. Default: `raw-emote-data`.
-
-**Server B (Analyzer + Settings API):**
--   `KAFKA_BROKER`: The address of the Kafka broker. Default: `kafka:9092`.
--   `KAFKA_TOPIC_IN`: The topic from which to consume raw emote data. Default: `raw-emote-data`.
--   `KAFKA_TOPIC_OUT`: The topic to which aggregated data is published. Default: `aggregated-emote-data`.
--   `PORT`: The port on which the REST API server runs. Default: `3001`.
-
-**Server A (WebSocket Gateway):**
--   `KAFKA_BROKER`: The address of the Kafka broker. Default: `kafka:9092`.
--   `KAFKA_TOPIC`: The topic from which to consume aggregated data. Default: `aggregated-emote-data`.
--   `PORT`: The port on which the WebSocket server runs. Default: `3002`.
-
-**Frontend:**
--   `WEBSOCKET_URL`: The URL for the WebSocket server (Server A). Used by the Nginx proxy. Default: `ws://localhost:3002`.
--   `API_URL`: The URL for the REST API (Server B). Used by the Nginx proxy. Default: `http://localhost:3001`.
+| Service          | Variable          | Description                                  | Default Value        |
+| :--------------- | :---------------- | :------------------------------------------- | :------------------- |
+| **Emote Gen**    | `KAFKA_BROKER`    | Address of the Kafka broker                  | `kafka:9092`         |
+|                  | `KAFKA_TOPIC`     | Topic for raw emote data                     | `raw-emote-data`     |
+| **Server B**     | `KAFKA_BROKER`    | Address of the Kafka broker                  | `kafka:9092`         |
+|                  | `KAFKA_TOPIC_IN`  | Topic for consuming raw emotes               | `raw-emote-data`     |
+|                  | `KAFKA_TOPIC_OUT` | Topic for publishing aggregated emotes       | `aggregated-emote-data` |
+|                  | `PORT`            | Port for the REST API server                 | `3001`               |
+| **Server A**     | `KAFKA_BROKER`    | Address of the Kafka broker                  | `kafka:9092`         |
+|                  | `KAFKA_TOPIC`     | Topic for consuming aggregated data          | `aggregated-emote-data` |
+|                  | `PORT`            | Port for the WebSocket server                | `3002`               |
+| **Frontend**     | `WEBSOCKET_URL`   | URL for the WebSocket server (for Nginx)     | `ws://localhost:3002` |
+|                  | `API_URL`         | URL for the REST API (for Nginx)             | `http://localhost:3001`|
 
 ### Customization
 
@@ -194,7 +219,10 @@ services:
 ```
 This will expose the frontend on port `8081`, or `8080` if the variable is not set.
 
-## API & contracts
+</details>
+
+<details id="api--contracts">
+<summary>🔌 API & Contracts</summary>
 
 This section details the data contracts for the REST API, WebSocket connections, and Kafka topics.
 
@@ -204,195 +232,67 @@ Server B exposes a REST API for managing the analysis settings.
 
 **Endpoints:**
 
--   `GET /settings/interval`
-    -   **Description**: Retrieves the current analysis interval.
-    -   **Response**: `200 OK`
-        ```json
-        {
-          "interval": 30
-        }
-        ```
+-   `GET /settings/interval`: Retrieves the current analysis interval.
+-   `PUT /settings/interval`: Updates the analysis interval.
+-   `GET /settings/threshold`: Retrieves the current significance threshold.
+-   `PUT /settings/threshold`: Updates the significance threshold.
+-   `GET /settings/allowed-emotes`: Retrieves the list of emotes being tracked.
+-   `PUT /settings/allowed-emotes`: Updates the list of tracked emotes.
 
--   `PUT /settings/interval`
-    -   **Description**: Updates the analysis interval.
-    -   **Request Body**:
-        ```json
-        {
-          "interval": 50
-        }
-        ```
-    -   **Response**: `200 OK`
-        ```json
-        {
-          "interval": 50
-        }
-        ```
-    -   **Error**: `400 Bad Request` if `interval` is not a positive number.
-
--   `GET /settings/threshold`
-    -   **Description**: Retrieves the current significance threshold.
-    -   **Response**: `200 OK`
-        ```json
-        {
-          "threshold": 0.3
-        }
-        ```
-
--   `PUT /settings/threshold`
-    -   **Description**: Updates the significance threshold.
-    -   **Request Body**:
-        ```json
-        {
-          "threshold": 0.5
-        }
-        ```
-    -   **Response**: `200 OK`
-        ```json
-        {
-          "threshold": 0.5
-        }
-        ```
-    -   **Error**: `400 Bad Request` if `threshold` is not a number between 0 and 1.
-
--   `GET /settings/allowed-emotes`
-    -   **Description**: Retrieves the list of emotes being tracked.
-    -   **Response**: `200 OK`
-        ```json
-        {
-          "allowedEmotes": ["😀", "😡", "😢", "😮", "❤️", "👍", "👎", "🔥"]
-        }
-        ```
-
--   `PUT /settings/allowed-emotes`
-    -   **Description**: Updates the list of tracked emotes.
-    -   **Request Body**:
-        ```json
-        {
-          "allowedEmotes": ["❤️", "🔥"]
-        }
-        ```
-    -   **Response**: `200 OK`
-        ```json
-        {
-          "allowedEmotes": ["❤️", "🔥"]
-        }
-        ```
-    -   **Error**: `400 Bad Request` if `allowedEmotes` is not a non-empty array.
-
+*For detailed request/response payloads, see the source code in `server-b/index.js`.*
 
 ### Server A – WebSocket
 
 Server A broadcasts messages to all connected frontend clients.
 
-**Connection:**
--   Upon successful connection, the server sends a welcome message:
-    ```json
-    {
-      "type": "connection",
-      "message": "Connected to Server A"
-    }
-    ```
-
-**Broadcast Messages:**
--   When significant moments are detected, the server broadcasts the following message:
-    ```json
-    {
-      "type": "significant-moments",
-      "data": [
-        {
-          "emote": "🔥",
-          "timestamp": "2025-05-01T10:20:30.000Z",
-          "count": 42,
-          "ratio": 0.72
-        }
-      ]
-    }
-    ```
+-   **Connection**: On success, the server sends a `{ "type": "connection", ... }` message.
+-   **Broadcasts**: Significant moments are sent as `{ "type": "significant-moments", "data": [...] }` messages.
 
 ### Kafka Payloads
 
-**Topic: `raw-emote-data`**
--   **Producer**: Emote Generator
--   **Consumer**: Server B
--   **Description**: Contains individual emote events as they are generated.
--   **Payload Example**:
-    ```json
-    {
-      "emote": "👍",
-      "timestamp": "2025-05-01T10:20:30.123Z"
-    }
-    ```
+-   **`raw-emote-data`**: Contains individual emote events as JSON objects: `{ "emote": "👍", "timestamp": "..." }`.
+-   **`aggregated-emote-data`**: Contains an array of significant moments identified during an analysis window.
 
-**Topic: `aggregated-emote-data`**
--   **Producer**: Server B
--   **Consumer**: Server A
--   **Description**: Contains an array of significant moments identified during an analysis window.
--   **Payload Example**:
-    ```json
-    [
-      {
-        "emote": "🔥",
-        "timestamp": "2025-05-01T10:20:00.000Z",
-        "count": 42,
-        "total": 58,
-        "ratio": 0.724
-      },
-      {
-        "emote": "❤️",
-        "timestamp": "2025-05-01T10:20:00.000Z",
-        "count": 35,
-        "total": 58,
-        "ratio": 0.603
-      }
-    ]
-    ```
+</details>
 
-## Project Structure
+<details id="project-structure">
+<summary>📁 Project Structure</summary>
 
-The repository is organized into several top-level directories, each representing a distinct service or component of the system.
+The repository is organized into directories by service.
 
-```text
+```
 ./
-├── docker-compose.yml      # Defines and configures all services for a one-command launch.
+├── docker-compose.yml      # Defines and configures all services.
 ├── emote-generator/        # Service to simulate and generate emote data.
-│   ├── Dockerfile          # Docker build definition for the emote generator.
-│   ├── index.js            # Main application logic for generating emotes and sending them to Kafka.
-│   └── package.json        # Node.js dependencies (`kafkajs`).
 ├── server-a/               # WebSocket gateway service.
-│   ├── Dockerfile          # Docker build definition for Server A.
-│   ├── index.js            # Consumes aggregated data from Kafka and broadcasts it via WebSockets.
-│   └── package.json        # Node.js dependencies (`express`, `ws`, `kafkajs`, `cors`).
 ├── server-b/               # Analysis and settings API service.
-│   ├── Dockerfile          # Docker build definition for Server B.
-│   ├── index.js            # Consumes raw data, analyzes it, and exposes the settings API.
-│   └── package.json        # Node.js dependencies (`express`, `kafkajs`, `cors`, `body-parser`).
 ├── frontend/               # React frontend application.
-│   ├── Dockerfile          # Multi-stage Docker build for the React app and Nginx server.
-│   ├── nginx.conf          # Nginx configuration for serving the app and proxying API/WebSocket requests.
-│   ├── package.json        # Node.js dependencies (`react`, `axios`).
-│   ├── public/             # Public assets for the React app.
-│   └── src/                # React application source code.
-│       └── App.js          # The main React component containing the UI and application logic.
 ├── documentation.md        # Course-specific documentation and design notes.
 └── README.md               # This file.
 ```
 
-## Roadmap
-- Persist settings and moments (DB/Redis)
-- AuthN/Z for Settings API
-- Richer analysis (adaptive thresholds, time windows)
-- Observability (metrics/dashboards)
+</details>
 
-## Contributing
-Issues and PRs are welcome. For larger changes, open an issue first to discuss direction.
+## 🗺️ Roadmap
 
-## License
-Educational license for COMP.CS.510. If you reuse, please credit the author(s).
+-   [ ] **Persist Settings & Moments**: Integrate a database (e.g., Redis or PostgreSQL) to store configuration and significant moments.
+-   [ ] **Authentication & Authorization**: Secure the settings API endpoints.
+-   [ ] **Richer Analysis**: Implement more sophisticated analysis, such as adaptive thresholds or time-decaying windows.
+-   [ ] **Observability**: Add structured logging, metrics, and dashboards (e.g., using Prometheus and Grafana).
 
-## Acknowledgements
-- Course brief: COMP.CS.510 Advanced Web Development – Back End (Spring 2025)
-- Bitnami Kafka (KRaft) image
-- KafkaJS – modern Kafka client for Node.js
+## 🤝 Contributing
+
+Issues and pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
+
+## 📜 License
+
+This project is licensed under the **Educational License**. See the `LICENSE` file for details. If you reuse any part of this project, please provide credit.
+
+## 🙏 Acknowledgements
+
+-   **Course**: COMP.CS.510 Advanced Web Development – Back End (Spring 2025)
+-   **Inspiration**: The many real-time data processing pipelines that power modern web applications.
+-   **Key Libraries**: A special thanks to the maintainers of `KafkaJS`, `Express`, and `React`.
 
 
 
