@@ -56,23 +56,12 @@ The system enables viewers of live streams to react to meaningful moments with e
 ### Data flow (mermaid)
 ```mermaid
 flowchart LR
-    subgraph "Backend Services"
-        EG[Emote Generator<br/>Node.js]
-        SB[Server B<br/>Analyzer + REST]
-        SA[Server A<br/>WebSocket]
-        K[(Kafka)]
-    end
-
-    subgraph "Frontend"
-        FE[User Interface<br/>React + Nginx]
-    end
-
-    EG -- "raw-emote-data<br/>{\"emote\": \"🔥\", ...}" --> K
-    K -- "raw-emote-data" --> SB
-    SB -- "aggregated-emote-data<br/>[{\"emote\": \"🔥\", ...}]" --> K
-    K -- "aggregated-emote-data" --> SA
-    SA -- "WebSocket<br/>{\"type\": \"significant-moments\", ...}" --> FE
-    FE -- "HTTP API<br/>GET /settings" --> SB
+    EG[Emote Generator<br/>Node.js] -->|raw-emote-data| K[(Kafka)]
+    K -->|raw-emote-data| SB[Server B<br/>Analyzer + REST]
+    SB -->|aggregated-emote-data| K
+    K -->|aggregated-emote-data| SA[Server A<br/>WebSocket]
+    SA -->|WebSocket| FE[Frontend<br/>React + Nginx]
+    FE -->|HTTP API| SB
 ```
 
 ### Kafka Topics
